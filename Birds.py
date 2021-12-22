@@ -44,6 +44,7 @@ class BirdEngine(KnowledgeEngine):
     def mallard(self):
         self.declare(Bird('mallard'))
 
+'''
 # Test : 
 engine = BirdEngine()
 engine.reset()
@@ -52,4 +53,107 @@ print(engine.facts)
 print("-----------")
 engine.run()
 print(engine.facts)
+'''
 
+list_column = [
+    [
+        sg.Text("Bird    "),
+        sg.InputText(size=(25, 1), enable_events=True, key="-BIRD-"),
+        sg.Button("enter"),
+    ],
+    [
+        sg.Text("Family"),
+        sg.InputText(size=(35, 1), enable_events=True, key="-FAMILY-"),
+    ],
+    [
+        sg.Text("Color  "),
+        sg.InputText(size=(35, 1), enable_events=True, key="-COLOR-"),
+    ],
+    [
+        sg.Text("Order  "),
+        sg.InputText(size=(35, 1), enable_events=True, key="-ORDER-"),
+    ],
+    [
+        sg.Text("Facts  "),
+        sg.InputText(size=(35, 2), enable_events=True, key="-FACTS-"),
+    ],
+    [
+        sg.Text("Initial facts        "),
+        sg.Listbox(
+            values=[], enable_events=True, size=(25, 4), key="-LISTF-"
+        )
+    ],
+    [
+        sg.Text("Concluded facts"),
+        sg.Listbox(
+            values=[], enable_events=True, size=(25, 7), key="-LIST-"
+        )
+    ]
+]
+
+layout = [
+    [
+        sg.Column(list_column),
+    ]
+]
+
+window = sg.Window("Birds", layout)
+lst = numpy.array([])
+lstF = numpy.array([])
+while True:
+    event, values = window.read()
+    if event == "Exit" or event == sg.WIN_CLOSED:
+        break
+    if event == "enter":
+        lst = numpy.array([])
+        lstF = numpy.array([])
+        color = values["-COLOR-"]
+        order = values["-ORDER-"]
+        bird = values["-BIRD-"]
+        family = values["-FAMILY-"]
+        facts = values["-FACTS-"].split()
+        engine = BirdEngine()
+        engine.reset()
+        #engine.declare(Fact(size='large'))
+        for fac in facts : 
+            # size :
+            if(fac[0:fac.index('=')] == 'size') : 
+                engine.declare(Fact(size=fac[fac.index("'")+1:len(fac)-1]))
+            # wings : 
+            if(fac[0:fac.index('=')] == 'wings') : 
+                engine.declare(Fact(wings=fac[fac.index("'")+1:len(fac)-1]))
+            # flight : 
+            if(fac[0:fac.index('=')] == 'flight') : 
+                engine.declare(Fact(flight=fac[fac.index("'")+1:len(fac)-1]))
+            # feed : 
+            if(fac[0:fac.index('=')] == 'feed') : 
+                engine.declare(Fact(feed=fac[fac.index("'")+1:len(fac)-1]))
+        if(bird!=''):
+            engine.declare(Bird(bird))
+        if(family!=''):
+            engine.declare(Family(family))
+        if(color!=''):
+            engine.declare(Color(color))
+        if(order!=''):
+            engine.declare(Order(order))
+        for f in engine.facts:
+            i = 0;
+            for k, v in engine.facts[f].items(): 
+                if(i%2 == 0) : 
+                    if(v != 0.0) :
+                        lstF = numpy.append(lstF, [v])
+                i+=1
+                
+        window["-LISTF-"].update(lstF)
+
+        engine.run()
+        
+        for f in engine.facts:
+            i = 0;
+            for k, v in engine.facts[f].items(): 
+                if(i%2 == 0) : 
+                    if(v != 0.0) :
+                        lst = numpy.append(lst, [v])
+                i+=1
+                
+        window["-LIST-"].update(lst)
